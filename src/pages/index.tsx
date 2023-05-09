@@ -1,5 +1,5 @@
 import { SignOutButton } from "@clerk/clerk-react";
-import { SignIn, SignInButton, SignedOut, useUser } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import { Post } from "@prisma/client";
 import { type NextPage } from "next";
 import Head from "next/head";
@@ -10,8 +10,6 @@ const Home: NextPage = () => {
   const user = useUser();
   const res = api.posts.getAll.useQuery();
   const data = res.data as Post[];
-
-  console.log("hello", data);
 
   return (
     <>
@@ -26,12 +24,13 @@ const Home: NextPage = () => {
         </div>
         <div className="text-white">
           <h2 className="font-bold">Posts: </h2>
-          {data.map((post: Post, idx: number) => (
-            <div key={post?.id}>
-              <span>{idx + 1}</span>. <span>{post?.content}</span> -{" "}
-              {post?.createdAt?.toLocaleString()}
-            </div>
-          ))}
+          {data &&
+            data?.map((post: Post, idx: number) => (
+              <div key={post?.id}>
+                <span>{idx + 1}</span>. <span>{post?.content}</span> -{" "}
+                {post?.createdAt?.toLocaleString()}
+              </div>
+            ))}
         </div>
       </main>
     </>
