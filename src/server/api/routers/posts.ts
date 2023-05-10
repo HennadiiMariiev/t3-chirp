@@ -3,15 +3,34 @@ import {
   publicProcedure,
   privateProcedure,
 } from "~/server/api/trpc";
+import { User, clerkClient } from "@clerk/nextjs/server";
 import { z } from "zod";
 
-export const postsRouter = createTRPCRouter({
-  getAll: publicProcedure.query(({ ctx }) => {
-    const authorId = ctx.userId;
+const filterUserForClient = (user: User) => {
+  return {
+    id: user.id,
+    userName: user.username,
+    profilePicture: user.profileImageUrl,
+  };
+};
 
-    if (!authorId) {
-      return ctx.prisma.post.findMany();
-    }
+export const postsRouter = createTRPCRouter({
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    const posts = await ctx.prisma.post.findMany({ take: 100 });
+    const users = (
+      await clerkClient.users.getUserList({
+        userId: posts.map((post) => post.authorId),
+        limit: 100,
+      })
+    ).map(filterUserForClient);
+
+    return posts.map((post) => ({
+      ...post,
+      author: users.find((user) => user.id === post.authorId),
+    }));
+  }),
+  getAllByAuthor: privateProcedure.query(({ ctx }) => {
+    const authorId = ctx?.userId;
 
     return ctx.prisma.post.findMany({ where: { authorId } });
   }),
@@ -34,7 +53,7 @@ export const postsRouter = createTRPCRouter({
       const authorId = ctx.userId;
 
       if (!authorId) {
-        return null;
+        return [];
       }
 
       const post = await ctx.prisma.post.delete({

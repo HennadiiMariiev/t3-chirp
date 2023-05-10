@@ -5,7 +5,7 @@ import Head from "next/head";
 
 import { api } from "~/utils/api";
 import UserInfo from "~/components/UserInfo";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SignOutIcon from "~/components/icons/SignOutIcon";
 import SignInIcon from "~/components/icons/SignInIcon";
 import NavBar from "~/layouts/NavBar";
@@ -17,7 +17,7 @@ import PostList from "~/components/PostList";
 
 const Home: NextPage = () => {
   const [post, setPost] = useState("");
-  const { user, isSignedIn } = useUser();
+  const { isSignedIn } = useUser();
   const {
     data,
     isLoading: isLoadingPosts,
@@ -25,6 +25,10 @@ const Home: NextPage = () => {
   } = api.posts.getAll.useQuery();
 
   const ctx = api.useContext();
+
+  useEffect(() => {
+    void ctx.posts.getAll.invalidate();
+  }, [isSignedIn]);
 
   const { mutate, isLoading: isLoadingOnePost } = api.posts.addPost.useMutation(
     {
@@ -81,7 +85,7 @@ const Home: NextPage = () => {
           </div>
         </div>
       </NavBar>
-      <main className="flex h-[2000px] flex-col items-center justify-start pt-24">
+      <main className="flex flex-col items-center justify-start pt-24">
         <Container>
           {isSignedIn && (
             <div className="mb-5 flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch">
