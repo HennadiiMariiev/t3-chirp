@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.logo span,
+.logo img {
+  transition: all 250ms ease-in-out;
+  @apply text-slate-100;
+}
+
+.logo img {
+  @apply bg-slate-100;
+}
+
+.logo:hover img {
+  @apply bg-white;
+}
+
+.logo:hover span {
+  @apply text-white;
+}
