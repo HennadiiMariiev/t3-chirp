@@ -23,7 +23,7 @@ function PostList({
   return (
     <div className="flex flex-col items-center justify-center text-white">
       <h2 className="mb-2 text-lg font-bold">Posts:</h2>
-      <ul className="flex w-full list-none flex-col gap-3 rounded-[16px] bg-neutral-700 px-4 py-3 sm:w-[350px]">
+      <ul className="flex w-full list-none flex-col justify-start gap-3 divide-y divide-solid divide-neutral-600 rounded-[16px] bg-neutral-700 px-4 py-3 sm:w-[350px]">
         {!!posts?.length && posts}
         {!posts?.length && !isProcess && (
           <li className="text-center">Posts not found...</li>

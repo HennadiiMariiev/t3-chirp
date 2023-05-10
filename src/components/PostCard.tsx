@@ -19,28 +19,31 @@ function PostCard({ post, className = "", deletePost }: IProps) {
     return null;
   }
 
-  const userMeta = `${post?.author?.userName as string}`;
-
   return (
-    <li className={clx("flex items-center justify-start", className)}>
+    <li className={clx("flex items-center justify-start pt-3", className)}>
       {post?.author?.profilePicture ? (
         <Image
           src={post?.author?.profilePicture}
-          alt={userMeta}
+          alt={post?.author?.userName}
           width={24}
           height={24}
           className="mr-3 rounded-full"
-          title={userMeta}
+          title={post?.author?.userName}
         />
       ) : (
         <span className="flex h-[24px] min-w-[24px] items-center justify-center rounded-full bg-slate-200 p-1 text-sm text-neutral-800 sm:mr-2">
-          {prepareUserInitials(userMeta)}
+          {prepareUserInitials(post?.author?.userName)}
         </span>
       )}
       <div className="flex w-[300px] flex-col items-start justify-between">
-        <p>{post?.content}</p>
+        <span className="text-xs font-medium text-slate-300">
+          {post?.author?.userName}
+        </span>
+        <p className="mb-1 text-base leading-[120%] text-white">
+          {post?.content}
+        </p>
         {post?.createdAt && (
-          <span className="text-sm text-slate-300">
+          <span className="text-xs text-slate-300">
             {post?.createdAt?.toLocaleString()}
           </span>
         )}

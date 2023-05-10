@@ -85,7 +85,7 @@ const Home: NextPage = () => {
           </div>
         </div>
       </NavBar>
-      <main className="flex flex-col items-center justify-start pt-24">
+      <main className="flex flex-col items-center justify-start py-24 ">
         <Container>
           {isSignedIn && (
             <div className="mb-5 flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch">

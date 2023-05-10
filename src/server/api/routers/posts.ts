@@ -9,7 +9,7 @@ import { z } from "zod";
 const filterUserForClient = (user: User) => {
   return {
     id: user.id,
-    userName: user.username,
+    userName: `${user.firstName as string} ${user.lastName as string}`,
     profilePicture: user.profileImageUrl,
   };
 };
