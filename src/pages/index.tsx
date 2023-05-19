@@ -1,19 +1,16 @@
-import { SignOutButton } from "@clerk/clerk-react";
-import { SignInButton, useUser } from "@clerk/nextjs";
-import { type NextPage } from "next";
+import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import Head from "next/head";
+import { type NextPage } from "next";
 
 import { api } from "~/utils/api";
 import UserInfo from "~/components/UserInfo";
-import { useEffect, useState } from "react";
-import SignOutIcon from "~/components/icons/SignOutIcon";
-import SignInIcon from "~/components/icons/SignInIcon";
 import NavBar from "~/layouts/NavBar";
 import Logo from "~/components/Logo";
 import Container from "~/layouts/Container";
-import PostCard from "~/components/PostCard";
 import SignControl from "~/components/SignControl";
 import PostList from "~/components/PostList";
+import AddPost from "~/components/AddPost";
 
 const Home: NextPage = () => {
   const [post, setPost] = useState("");
@@ -47,6 +44,21 @@ const Home: NextPage = () => {
     }
   );
 
+  const { mutate: update, isLoading: isUpdatingOnePost } =
+    api.posts.updatePost.useMutation({
+      onSuccess: () => {
+        void ctx.posts.getAll.invalidate();
+      },
+      onError: (e) => {
+        const errorMessage = e.data?.zodError?.fieldErrors.content;
+        if (errorMessage && errorMessage[0]) {
+          alert(errorMessage[0]);
+        } else {
+          alert("Failed to update! Please try again later.");
+        }
+      },
+    });
+
   const { mutate: deletePost, isLoading: isDeletingPost } =
     api.posts.deletePost.useMutation({
       onSuccess: () => {
@@ -62,12 +74,19 @@ const Home: NextPage = () => {
       },
     });
 
-  const removePost = (id: string) => {
-    deletePost({ id });
-  };
+  const removePost = (id: string) => deletePost({ id });
 
-  const isProcess =
-    isLoadingPosts || isFetching || isLoadingOnePost || isDeletingPost;
+  const onAddPost = (post: string) => mutate({ content: post });
+
+  const updatePost = (id: string, post: string) =>
+    update({ id, content: post });
+
+  const isInProgress =
+    isLoadingPosts ||
+    isFetching ||
+    isLoadingOnePost ||
+    isDeletingPost ||
+    isUpdatingOnePost;
 
   return (
     <>
@@ -88,25 +107,20 @@ const Home: NextPage = () => {
       <main className="flex flex-col items-center justify-start py-24 ">
         <Container>
           {isSignedIn && (
-            <div className="mb-5 flex w-full flex-col items-center gap-3 sm:flex-row sm:items-stretch">
-              <input
-                type="text"
-                value={post}
-                onChange={(e) => setPost(e.target.value)}
-                placeholder="Please, add your post..."
-                className="h-[40px] w-full rounded p-1 text-neutral-800"
-              />
-              <button
-                className="min-w-[120px] max-w-[140px] rounded bg-violet-600 px-3 py-2 text-center text-white transition-all duration-300 hover:bg-violet-800"
-                onClick={() => mutate({ content: post })}
-                disabled={isProcess}
-              >
-                Add Post
-              </button>
-            </div>
+            <AddPost
+              isInProgress={isInProgress}
+              onAddPost={onAddPost}
+              post={post}
+              setPost={setPost}
+            />
           )}
 
-          <PostList data={data} deletePost={removePost} isProcess={isProcess} />
+          <PostList
+            data={data}
+            deletePost={removePost}
+            updatePost={updatePost}
+            isInProgress={isInProgress}
+          />
         </Container>
       </main>
     </>

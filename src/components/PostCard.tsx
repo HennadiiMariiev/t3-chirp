@@ -1,23 +1,44 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import clx from "classnames";
-import { Post } from "@prisma/client";
+import type { Post } from "@prisma/client";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import TrashIcon from "./icons/TrashIcon";
 import { prepareUserInitials } from "~/utils/prepareUserInitials";
+import EditIcon from "./icons/EditIcon";
+import SaveIcon from "./icons/SaveIcon";
 
+const MIN_POST_LENGTH = 2;
 interface IProps {
   className: string;
   post: Post;
   deletePost: (id: string) => void;
+  updatePost: (id: string, post: string) => void;
+  isInProgress: boolean;
 }
 
-function PostCard({ post, className = "", deletePost }: IProps) {
+function PostCard({
+  post,
+  className = "",
+  deletePost,
+  updatePost,
+  isInProgress,
+}: IProps) {
   const { user } = useUser();
+  const contentRef = useRef<HTMLInputElement>(null);
+  const [isEdit, setIsEdit] = useState(false);
+  const [value, setValue] = useState(post?.content);
 
   if (!post) {
     return null;
   }
+
+  const onEnterPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.code === "Enter" && value?.length >= MIN_POST_LENGTH) {
+      updatePost(post?.id, value);
+      setIsEdit(false);
+    }
+  };
 
   return (
     <li className={clx("flex items-center justify-start pt-3", className)}>
@@ -39,9 +60,27 @@ function PostCard({ post, className = "", deletePost }: IProps) {
         <span className="text-xs font-medium text-slate-300">
           {post?.author?.userName}
         </span>
-        <p className="mb-1 text-base leading-[120%] text-white">
-          {post?.content}
-        </p>
+        {user?.id === post?.authorId ? (
+          <input
+            type="text"
+            className={`mb-1 w-[100%] bg-transparent text-base leading-[120%] text-white ${
+              value?.length < MIN_POST_LENGTH ? "outline outline-red-300" : ""
+            }`}
+            disabled={!isEdit}
+            onChange={(e) => setValue(e.target.value)}
+            onBlur={() => setTimeout(() => setIsEdit(false), 500)}
+            onKeyDown={onEnterPress}
+            title={
+              isEdit ? "Edit post and press Enter" : "Click Edit to update post"
+            }
+            ref={contentRef}
+            value={value}
+          />
+        ) : (
+          <p className="mb-1 w-[100%] bg-transparent text-base leading-[120%] text-white">
+            {post?.content}
+          </p>
+        )}
         {post?.createdAt && (
           <span className="text-xs text-slate-300">
             {post?.createdAt?.toLocaleString()}
@@ -49,13 +88,33 @@ function PostCard({ post, className = "", deletePost }: IProps) {
         )}
       </div>
       {user?.id === post?.authorId && (
-        <button
-          className="ml-3 rounded-full bg-neutral-600 p-2 text-slate-200 transition-all duration-300 hover:text-white"
-          onClick={() => deletePost(post?.id)}
-          title="Delete post"
-        >
-          <TrashIcon width={20} />
-        </button>
+        <>
+          <button
+            className="ml-3 flex h-[30px] min-w-[30px] items-center justify-center rounded-full bg-neutral-600 text-slate-200 transition-all duration-300 hover:text-white"
+            onClick={() => {
+              if (isEdit) {
+                updatePost(post?.id, value);
+              } else {
+                setIsEdit(true);
+                setTimeout(() => contentRef?.current?.focus(), 0);
+              }
+            }}
+            title={isEdit ? "Save" : "Edit"}
+            disabled={
+              isInProgress || (isEdit && value?.length < MIN_POST_LENGTH)
+            }
+          >
+            {isEdit ? <SaveIcon width={16} /> : <EditIcon width={16} />}
+          </button>
+          <button
+            className="ml-2 flex h-[30px] min-w-[30px] items-center justify-center rounded-full bg-neutral-600 text-slate-200 transition-all duration-300 hover:text-white"
+            onClick={() => deletePost(post?.id)}
+            title="Delete"
+            disabled={isInProgress}
+          >
+            <TrashIcon width={20} />
+          </button>
+        </>
       )}
     </li>
   );
