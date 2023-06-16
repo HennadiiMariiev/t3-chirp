@@ -21,6 +21,7 @@ function PostList({
 
   const posts = data
     ?.filter((post) => (isUserPosts ? user?.id === post?.authorId : true))
+    .sort((a, b) => Number(b?.createdAt) - Number(a?.createdAt))
     .map((post) => (
       <PostCard
         key={post?.id}
@@ -34,7 +35,7 @@ function PostList({
 
   return (
     <div className="flex flex-col items-center justify-center text-white">
-      <div className="mb-3 flex w-[350px] items-center justify-between px-2">
+      <div className="mb-3 flex items-center justify-between px-2 sm:w-[350px] md:w-[450px] lg:w-[650px]">
         <h2 className="text-lg font-bold leading-[110%]">Posts:</h2>
         {user && (
           <div className="flex items-center leading-[110%]">
@@ -54,7 +55,7 @@ function PostList({
           </div>
         )}
       </div>
-      <ul className="flex w-full list-none flex-col justify-start gap-3 divide-y divide-solid divide-neutral-600 rounded-[16px] bg-neutral-700 px-4 py-3 sm:w-[350px]">
+      <ul className="flex w-full list-none flex-col justify-start gap-3 divide-y divide-solid divide-neutral-600 rounded-[16px] bg-neutral-700 px-4 py-3 sm:w-[350px] md:w-[450px] lg:w-[650px]">
         {!!posts?.length && posts}
         {!posts?.length && !isInProgress && (
           <li className="text-center">Posts not found...</li>

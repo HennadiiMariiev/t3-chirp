@@ -7,6 +7,7 @@ import TrashIcon from "./icons/TrashIcon";
 import { prepareUserInitials } from "~/utils/prepareUserInitials";
 import EditIcon from "./icons/EditIcon";
 import SaveIcon from "./icons/SaveIcon";
+import timeFromNow from "~/utils/timeFromNow";
 
 const MIN_POST_LENGTH = 2;
 interface IProps {
@@ -56,10 +57,17 @@ function PostCard({
           {prepareUserInitials(post?.author?.userName)}
         </span>
       )}
-      <div className="flex w-[300px] flex-col items-start justify-between">
-        <span className="text-xs font-medium text-slate-300">
-          {post?.author?.userName}
-        </span>
+      <div className="flex w-[100%] flex-col items-start justify-between">
+        <div className="flex flex-row items-start justify-between">
+          <span className="mr-1 text-xs font-bold text-slate-300">
+            {post?.author?.userName}
+          </span>
+          {post?.createdAt && (
+            <span className="text-[11px] text-slate-300 ">
+              {timeFromNow(post?.createdAt)}
+            </span>
+          )}
+        </div>
         {user?.id === post?.authorId ? (
           <input
             type="text"
@@ -77,14 +85,9 @@ function PostCard({
             value={value}
           />
         ) : (
-          <p className="mb-1 w-[100%] bg-transparent text-base leading-[120%] text-white">
+          <p className="w mb-1 w-[100%] break-all bg-transparent text-base leading-[120%] text-white">
             {post?.content}
           </p>
-        )}
-        {post?.createdAt && (
-          <span className="text-xs text-slate-300">
-            {post?.createdAt?.toLocaleString()}
-          </span>
         )}
       </div>
       {user?.id === post?.authorId && (
